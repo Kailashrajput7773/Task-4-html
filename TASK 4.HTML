@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Full Web App</title>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: transparent;
+      color: black; /* Changed text color to black */
+      height: 100%;
+    }
+
+    #tsparticles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.85); /* lighter background for nav */
+      padding: 12px 20px;
+      gap: 30px;
+      backdrop-filter: blur(8px);
+    }
+
+    nav a {
+      color: black; /* nav links black */
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+
+    nav a:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    section {
+      display: none;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    section.active {
+      display: block;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    h2, h3 {
+      color: black; /* headings black */
+    }
+
+    .project, .note, .product {
+      background: rgba(255, 255, 255, 0.8); /* lighter background for readability */
+      border-radius: 12px;
+      padding: 15px;
+      margin: 15px 0;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      color: black;
+      background: white;
+    }
+
+    button {
+      background: #26a69a;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      border: none;
+    }
+
+    button:hover {
+      background: #00796b;
+    }
+
+    .product-listing .product {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="tsparticles"></div>
+
+  <nav>
+    <a onclick="showSection('portfolio')">Portfolio</a>
+    <a onclick="showSection('todo')">To-Do</a>
+    <a onclick="showSection('products')">Products</a>
+  </nav>
+
+  <!-- Portfolio Section -->
+  <section id="portfolio" class="active">
+    <h2>About Me</h2>
+    <p>Hello! I'm a passionate full-stack web developer who loves building modern applications.</p>
+    <h3>Projects</h3>
+    <div class="project">💼 Portfolio Website</div>
+    <div class="project">📝 To-Do App with Local Storage</div>
+    <div class="project">🛒 Product Listing with Filter & Sort</div>
+    <h3>Contact</h3>
+    <p>📧 Email: example@example.com</p>
+  </section>
+
+  <!-- To-Do Section -->
+  <section id="todo">
+    <h2>📝 My To-Do List</h2>
+    <input type="text" id="todoInput" placeholder="Add a task..."/>
+    <button onclick="addTodo()">Add Task</button>
+    <ul id="todoList"></ul>
+  </section>
+
+  <!-- Products Section -->
+  <section id="products">
+    <h2>🛍 Products</h2>
+    <select id="categoryFilter" onchange="filterProducts()">
+      <option value="all">All Categories</option>
+      <option value="electronics">Electronics</option>
+      <option value="clothing">Clothing</option>
+    </select>
+    <select id="sortFilter" onchange="sortProducts()">
+      <option value="default">Sort By</option>
+      <option value="price">Price</option>
+      <option value="rating">Rating</option>
+    </select>
+    <div id="productContainer" class="product-listing"></div>
+  </section>
+
+  <script>
+    // Navigation
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // To-Do Logic
+    const todoList = JSON.parse(localStorage.getItem('todos')) || [];
+    function addTodo() {
+      const input = document.getElementById('todoInput');
+      if (!input.value) return;
+      todoList.push(input.value);
+      input.value = '';
+      saveTodos();
+    }
+    function saveTodos() {
+      localStorage.setItem('todos', JSON.stringify(todoList));
+      renderTodos();
+    }
+    function renderTodos() {
+      const list = document.getElementById('todoList');
+      list.innerHTML = '';
+      todoList.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.textContent = task;
+        li.onclick = () => { todoList.splice(index, 1); saveTodos(); };
+        list.appendChild(li);
+      });
+    }
+    renderTodos();
+
+    // Products Logic
+    const products = [
+      { name: "Laptop", category: "electronics", price: 1200, rating: 4.5 },
+      { name: "T-Shirt", category: "clothing", price: 20, rating: 4.1 },
+      { name: "Headphones", category: "electronics", price: 150, rating: 4.7 },
+      { name: "Jeans", category: "clothing", price: 40, rating: 4.0 }
+    ];
+
+    function renderProducts(items) {
+      const container = document.getElementById('productContainer');
+      container.innerHTML = '';
+      items.forEach(p => {
+        container.innerHTML += `
+          <div class="product">
+            <strong>${p.name}</strong><br/>
+            Category: ${p.category}<br/>
+            Price: $${p.price}<br/>
+            Rating: ${p.rating}
+          </div>`;
+      });
+    }
+
+    function filterProducts() {
+      const category = document.getElementById('categoryFilter').value;
+      let filtered = [...products];
+      if (category !== 'all') {
+        filtered = filtered.filter(p => p.category === category);
+      }
+      renderProducts(filtered);
+    }
+
+    function sortProducts() {
+      const sort = document.getElementById('sortFilter').value;
+      let sorted = [...products];
+      if (sort === 'price') {
+        sorted.sort((a, b) => a.price - b.price);
+      } else if (sort === 'rating') {
+        sorted.sort((a, b) => b.rating - a.rating);
+      }
+      renderProducts(sorted);
+    }
+
+    renderProducts(products);
+
+    // tsParticles background
+    tsParticles.load("tsparticles", {
+      background: { color: { value: "#1e1e2f" } },
+      fpsLimit: 60,
+      particles: {
+        color: { value: "#000000" },
+        links: {
+          enable: true,
+          distance: 150,
+          color: "#000000",
+          opacity: 0.4,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 2,
+          direction: "none",
+          outModes: "bounce"
+        },
+        number: {
+          value: 60,
+          density: { enable: true, area: 800 }
+        },
+        opacity: { value: 0.5 },
+        shape: { type: "circle" },
+        size: { value: 4, random: true }
+      },
+      detectRetina: true
+    });
+  </script>
+</body>
+</html>
